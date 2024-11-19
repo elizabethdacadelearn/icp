@@ -6,6 +6,7 @@ import Time "mo:base/Time";
 import Nat64 "mo:base/Nat64";
 import Int "mo:base/Int";
 import Buffer "mo:base/Buffer";
+import Iter "mo:base/Iter";
 actor {
   type Task={
     nameoftask:Text;
@@ -60,6 +61,20 @@ actor {
         return #err("company already exists")
       }
     }
+  };
+
+  //get company
+  public query func get_company(name:Text):async Result.Result<Company,Text>{
+  
+     switch(companies.get(name)){
+      case (null){
+        return #err("not found");
+      };
+      case (?found){
+        return #ok(found);
+      }
+     }
+
   };
   //add employees
 
@@ -180,8 +195,12 @@ actor {
         }
       }
     };
+    //get all created companies
+    public query func get_companies():async [Company]{
+       return Iter.toArray(companies.vals());
+    };
      //assigns tasks to employess
-     public shared ({caller}) func assign_tasks(companyname:Text,employeeid:Text,nameoftask:Text,description:Text):async Result.Result<Text,Text>{
+     public shared  func assign_tasks(companyname:Text,employeeid:Text,nameoftask:Text,description:Text):async Result.Result<Text,Text>{
          //verify if the company exists
       switch(companies.get(companyname)){
         case(null){
@@ -215,7 +234,7 @@ actor {
                };
 
               //update employee status
-               employessrecord.put(id,updated);
+               employessrecord.put(employeeid,updated);
         
                return #ok("assigned tasks successfuly");
 
